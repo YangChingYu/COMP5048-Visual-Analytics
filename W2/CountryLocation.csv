@@ -1,0 +1,9 @@
+Country,Division,Latitude,Longitude,Rank,Count
+Canada,West,53.95,-127.44,40,500
+Canada,East,55.57,-69.6,10,100
+Canada,North,64.01,-104.06,27,200
+Canada,South,49.95,-96.67,8,300
+United States,West,40.04,-113.9,13,600
+United States,East,40.71,-78.04,18,200
+United States,North,45.46,-100.54,33,400
+United States,South,31.65,-95.62,18,700

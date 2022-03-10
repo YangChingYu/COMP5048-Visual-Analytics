@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<!-- Load d3.js -->
+<script src="//d3js.org/d3.v6.min.js"></script>
+
+<!-- Create a div where the graph will take place -->
+<div id="my_dataviz3"></div>
+<script>
+
+// set the dimensions and margins of the graph
+var margin = {top: 10, right: 30, bottom: 40, left: 50},
+    width = 520 - margin.left - margin.right,
+    height = 520 - margin.top - margin.bottom;
+
+// append the SVG object to the body of the page
+var SVg = d3.select("#my_dataviz3")
+  .append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform",
+          "translate(" + margin.left + "," + margin.top + ")")
+
+// Add the black box around the chart
+SVg
+  .append("rect")
+    .attr("x",0)
+    .attr("y",0)
+    .attr("height", height)
+    .attr("width", height)
+    .style("fill", "none")
+    .style("stroke", "black")
+
+//Read the data
+d3.csv("cars.csv").then(function(data) {
+
+  // Add X axis
+  var x = d3.scaleLinear()
+    .domain([4, 8])
+    .range([ 0, width ])
+  SVg.append("g")
+    .attr("transform", "translate(0," + height + ")")
+    .call(d3.axisBottom(x))
+
+  // Add Y axis
+  var y = d3.scaleLinear()
+    .domain([0, 8])
+    .range([ height, 0])
+    .nice()
+  SVg.append("g")
+    .call(d3.axisLeft(y))
+
+  // Add X axis label:
+  SVg.append("text")
+      .attr("text-anchor", "end")
+      .attr("x", width)
+      .attr("y", height + margin.top + 20)
+      .text("Sepal Length");
+
+  // Y axis label:
+  SVg.append("text")
+      .attr("text-anchor", "end")
+      .attr("transform", "rotate(-90)")
+      .attr("y", -margin.left+20)
+      .attr("x", -margin.top)
+      .text("Petal Length")
+
+  // Shape scale: input a species, it outputs a shape
+  var shape = d3.scaleOrdinal()
+    .domain(["setosa", "versicolor", "virginica" ])
+    .range([ d3.symbolCircle, d3.symbolTriangle, d3.symbolSquare])
+
+  // Add dots
+  SVg.append('g')
+    .selectAll("dot")
+    .data(data)
+    .enter()
+    .append("path")
+      .attr("d", d3.symbol()
+        .size(120)
+        .type(function(d) {  return shape(d.Species) })
+      )
+      .attr("transform", function(d) { return "translate(" + x(d.Sepal_Length) + "," + y(d.Petal_Length) + ")"; })
+      .style("fill", "black")
+      .style("opacity", 0.8)
+
+})
+
+</script>
