@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="//d3js.org/d3.v6.min.js"></script>
+  </head>
+  <body>
+  <script>
+  var width = 640, height = 400;
+  var traces, timesteps, current_time, stopped = false;
+  
+  var body = d3.select('body');
+  var svg = body.append("svg")
+      .attr("width", width)
+      .attr("height", height);
+  
+  var pos_1 = [{'id':0, 'x':100, 'y':100},{'id':1, 'x':200, 'y':300}, {'id':2, 'x':100, 'y':200}]
+  var pos_2 = [{'id':0, 'x':150, 'y':150},{'id':1, 'x':300, 'y':100}, {'id':3, 'x':150, 'y':100}]
+  
+  var points = svg.selectAll('.point')
+        .data(pos_1, function(d) {return d.id;});
+  points.enter().append('circle')
+        .attr('class','point')
+        .attr('r', 5)
+        .attr('cx', function(d) {return d.x;})
+        .attr('cy', function(d) {return d.y;});
+  points = svg.selectAll('.point')
+        .data(pos_2, function(d) { return d.id}); // use the Person identifier to identify coordinates belonging to the same person
+    points.exit()
+        .remove(); // remove points with no more co-ordinates recorded
+     // add points newly appearing
+    points.enter().append('circle')
+        .attr('class', 'point')
+        .attr('r', 5);
+    // update positions of existing points
+    points
+      .transition(150)
+        .attr('cx', function(d) {return d.x;})
+        .attr('cy', function(d) {return d.y;})
+  
+  </script>
+  </body>
+</html>

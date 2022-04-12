@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<body>
+
+<!-- load the d3.js library -->    	
+<script src="//d3js.org/d3.v6.min.js"></script>
+
+<!-- Create a div where the graph will take place -->
+<div id="my_dataviz"></div>
+<script>
+
+// Dimension of the whole chart. Only one size since it has to be square
+var marginWhole = {top: 10, right: 10, bottom: 10, left: 10},
+    sizeWhole = 640 - marginWhole.left - marginWhole.right
+
+// Create the svg area
+var svg = d3.select("#my_dataviz")
+  .append("svg")
+    .attr("width", sizeWhole  + marginWhole.left + marginWhole.right)
+    .attr("height", sizeWhole  + marginWhole.top + marginWhole.bottom)
+  .append("g")
+    .attr("transform", "translate(" + marginWhole.left + "," + marginWhole.top + ")");
+
+function done(union, steps){
+    // create map of node id to coordinates
+    var coordMap = new Map();
+    union.nodes.forEach(function (d) {
+        coordMap.set(d.id, {'x': d.x, 'y':d.y});
+    });
+    
+    // draw each time step
+    for(i=0;i<steps.length;++i){
+      
+      // Add a 'g' at the right position
+      var tmp = svg
+        .append('g')
+        .attr("transform", "translate(" + ((i%numVar)*size+mar) + "," + ((Math.floor(i/numVar))*size+mar) + ")");
+        
+      var simple = steps[i];
+      
+      var link = tmp
+          .selectAll("line")
+          .data(simple.links)
+        .enter()
+          .append("line")
+          .style("stroke", "#aaa")
+
+        // Initialize the nodes
+        var node = tmp
+          .selectAll("circle")
+          .data(simple.nodes)
+        .enter()
+        .append("circle")
+          .attr("r", 2)
+          .style("fill", "#69b3a2")
+          
+       draw(link, node, coordMap);
+    }
+    
+}
+
+function draw(link, node, coordMap) {
+    link
+        .attr("x1", function(d) { return coordMap.get(d.source).x; })
+        .attr("y1", function(d) { return coordMap.get(d.source).y; })
+        .attr("x2", function(d) { return coordMap.get(d.target).x; })
+        .attr("y2", function(d) { return coordMap.get(d.target).y; });
+
+    node
+         .attr("cx", function(d) { return coordMap.get(d.id).x; })
+         .attr("cy", function(d) { return coordMap.get(d.id).y; });
+  }
+
+var simples = [{"nodes": [{"id": 0},{"id": 1},{"id":2}],
+            "links": [{"source":0,"target":1},{"source":0,"target":2}]},
+            {"nodes": [{"id": 0},{"id": 1},{"id":2}],
+            "links": [{"source":0,"target":1},{"source":0,"target":2}, {"source":1, "target":2}]},
+            {"nodes": [{"id": 0},{"id": 1},{"id":2},{"id":3},{"id":4}],
+            "links": [{"source":0,"target":1},{"source":0,"target":2}, {"source":1, "target":2},{"source":0,"target":3}, {"source":1,"target":4}]},
+            {"nodes": [{"id": 0},{"id": 1},{"id":2},{"id":3},{"id":4}],
+            "links": [{"source":0,"target":1},{"source":0,"target":2}, {"source":1, "target":2},{"source":0,"target":3}, {"source":1,"target":4},{"source":3,"target":4}]},
+            {"nodes": [{"id": 0},{"id": 1},{"id":2},{"id":3},{"id":4},{"id":5}],
+            "links": [{"source":0,"target":1},{"source":0,"target":2}, {"source":1, "target":2},{"source":0,"target":3}, {"source":1,"target":4},{"source":3,"target":4},{"source":2,"target":5}]},
+            {"nodes": [{"id": 0},{"id": 1},{"id":2},{"id":3},{"id":4},{"id":5}],
+            "links": [{"source":0,"target":1},{"source":0,"target":2}, {"source":1, "target":2},{"source":0,"target":3}, {"source":1,"target":4},{"source":3,"target":4},{"source":2,"target":5},{"source":1,"target":5}]},
+            {"nodes": [{"id": 0},{"id": 1},{"id":2},{"id":3},{"id":4},{"id":5},{"id":6}],
+            "links": [{"source":0,"target":1},{"source":0,"target":2}, {"source":1, "target":2},{"source":0,"target":3}, {"source":1,"target":4},{"source":3,"target":4},{"source":2,"target":5},{"source":1,"target":5},{"source":4,"target":6}]},
+            {"nodes": [{"id": 0},{"id": 1},{"id":2},{"id":3},{"id":4},{"id":5},{"id":6}],
+            "links": [{"source":0,"target":1},{"source":0,"target":2}, {"source":1, "target":2},{"source":0,"target":3}, {"source":1,"target":4},{"source":3,"target":4},{"source":2,"target":5},{"source":1,"target":5},{"source":4,"target":6}, {"source":2,"target":6}]},
+            {"nodes": [{"id": 0},{"id": 1},{"id":2},{"id":3},{"id":4},{"id":5},{"id":6},{"id":7}],
+            "links": [{"source":0,"target":1},{"source":0,"target":2}, {"source":1, "target":2},{"source":0,"target":3}, {"source":1,"target":4},{"source":3,"target":4},{"source":2,"target":5},{"source":1,"target":5},{"source":4,"target":6}, {"source":2,"target":6},{"source":6,"target":7}]}
+            ];
+
+var union = {'nodes': [{'id': 0}, {'id': 1}, {'id': 2}, {'id': 3}, {'id': 4}, {'id': 5}, {'id': 6}, {'id': 7}], 'links': [{'source': 0, 'target': 1}, {'source': 0, 'target': 2}, {'source': 0, 'target': 3}, {'source': 1, 'target': 2}, {'source': 1, 'target': 4}, {'source': 1, 'target': 5}, {'source': 2, 'target': 5}, {'source': 2, 'target': 6}, {'source': 3, 'target': 4}, {'source': 4, 'target': 6}, {'source': 6, 'target': 7}]};
+
+  var numVar = 3
+  mar = 20
+  size = sizeWhole / numVar
+
+        // Simulation to compute layout on union graph
+        var unionSimulation = d3.forceSimulation(union.nodes)                 // Force algorithm is applied to union.nodes
+            .force("link", d3.forceLink()                               // This force provides links between nodes
+                  .id(function(d) { return d.id; })                     // This provide  the id of a node
+                  .links(union.links)                                    // and this the list of links
+            )
+            .force("charge", d3.forceManyBody().strength(-400))         // This adds repulsion between nodes. Play with the -400 for the repulsion strength
+            .force("center", d3.forceCenter(size / 2, size / 2))     // This force attracts nodes to the center of the svg area
+            .on("end", done(union, simples));
+
+</script>
+</body>

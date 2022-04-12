@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="//d3js.org/d3.v6.min.js"></script>
+  </head>
+  <body>
+  <script>
+  var width = 640, height = 400;
+  var traces, timesteps, current_time, stopped = false;
+  
+  // maps coordinates in file to image coordinates
+  var x = d3.scaleLinear()
+        .range([0, width])
+        .domain([0,64]);
+  var y = d3.scaleLinear()
+        .range([height, 0]) // reversed to attain correct direction of y-axis
+        .domain([0,40]);
+  var body = d3.select('body');
+  var svg = body.append("svg")
+      .attr("width", width)
+      .attr("height", height);
+  
+  // background image
+  svg.append('image')
+    .attr('x', 0)
+    .attr('y', 0)
+    .attr('width', width)
+    .attr('height', height)
+    .attr('xlink:href', 'background.jpg');
+  
+  // read from file
+  
+  d3.tsv("movement.tsv").then(function (data){
+    traces = d3.rollup(data, function(d) {return d;}, 
+        function(d) {return +d.time;}); // transform input to be keyed on timestep
+    timesteps = Array.from(traces.keys()); // get all timestep values
+    timesteps.sort(function(a,b){return a - b;}); // numerically sorts the timesteps
+    current_time = 0; // index of the current timestep to be displayed
+    update_coords(traces, current_time); // draw initial position of items
+  });
+
+  // animation functions
+
+  function update_coords(traces, current_time){
+    var current_coords = traces.get(timesteps[current_time]); // get the coordinates of the people at the specified time
+    var points = svg.selectAll('.point')
+        .data(current_coords, function(d) { return d.id}); // use the Person identifier to identify coordinates belonging to the same person
+    points.exit()
+        .remove(); // remove points with no more co-ordinates recorded
+     // add points newly appearing
+    points.enter().append('circle')
+        .attr('class', 'point')
+        .attr('r', 2)
+        .attr('fill', 'red');
+    // update positions of existing points
+    points
+      .transition(150)
+        .attr('cx', function(d) {return x(d.x);})
+        .attr('cy', function(d) {return y(d.y);})
+  }
+
+  function autoplay(){
+    // reset time to beginning if end was reached previously
+    if(current_time>timesteps.length-1)
+      current_time = 0;
+    // else simply resume from previous point
+    else
+      stopped = false;
+    var interval = setInterval(function(){
+      update_coords(traces, current_time);
+      current_time += 1;
+      if(current_time>timesteps.length-1||stopped){
+        clearInterval(interval);
+      }
+    }, 150);
+  }
+
+  function pause(){
+    stopped = true;
+  }
+
+  function rewind(){
+    stopped = true;
+    current_time  = Math.max(0, current_time-1);
+    update_coords(traces, current_time);
+  }
+
+  function forward(){
+    stopped = true;
+    current_time = Math.min(timesteps.length-1, current_time+1);
+    update_coords(traces, current_time);
+  }
+
+  // controls
+  body.append('br');
+  body.append('button')
+      .text('Play')
+      .attr('onclick', 'autoplay()');
+  body.append('button')
+      .text('Pause')
+      .attr('onclick', 'pause()');
+  body.append('button')
+      .text('<')
+      .attr('onclick', 'rewind()');
+  body.append('button')
+      .text('>')
+      .attr('onclick', 'forward()');
+  </script>
+  </body>
+</html>
